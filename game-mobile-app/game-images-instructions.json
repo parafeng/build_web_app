@@ -1,0 +1,296 @@
+[
+  {
+    "type": "thumbnail",
+    "filename": "valley_of_terror.png",
+    "path": "src/assets/images/games/thumbnails/valley_of_terror.png",
+    "url": "https://via.placeholder.com/150x100/FF6B6B/ffffff?text=Valley%20of%20Terror",
+    "size": "150x100"
+  },
+  {
+    "type": "thumbnail",
+    "filename": "boulder_blast.png",
+    "path": "src/assets/images/games/thumbnails/boulder_blast.png",
+    "url": "https://via.placeholder.com/150x100/4ECDC4/ffffff?text=Boulder%20Blast",
+    "size": "150x100"
+  },
+  {
+    "type": "thumbnail",
+    "filename": "punch_heroes.png",
+    "path": "src/assets/images/games/thumbnails/punch_heroes.png",
+    "url": "https://via.placeholder.com/150x100/45B7D1/ffffff?text=Punch%20Heroes",
+    "size": "150x100"
+  },
+  {
+    "type": "thumbnail",
+    "filename": "blazing_blades.png",
+    "path": "src/assets/images/games/thumbnails/blazing_blades.png",
+    "url": "https://via.placeholder.com/150x100/FFA726/ffffff?text=Blazing%20Blades",
+    "size": "150x100"
+  },
+  {
+    "type": "thumbnail",
+    "filename": "bottle_shoot.png",
+    "path": "src/assets/images/games/thumbnails/bottle_shoot.png",
+    "url": "https://via.placeholder.com/150x100/66BB6A/ffffff?text=Bottle%20Shoot",
+    "size": "150x100"
+  },
+  {
+    "type": "thumbnail",
+    "filename": "puzzle_master.png",
+    "path": "src/assets/images/games/thumbnails/puzzle_master.png",
+    "url": "https://via.placeholder.com/150x100/AB47BC/ffffff?text=Puzzle%20Master",
+    "size": "150x100"
+  },
+  {
+    "type": "thumbnail",
+    "filename": "speed_racer.png",
+    "path": "src/assets/images/games/thumbnails/speed_racer.png",
+    "url": "https://via.placeholder.com/150x100/EF5350/ffffff?text=Speed%20Racer",
+    "size": "150x100"
+  },
+  {
+    "type": "thumbnail",
+    "filename": "castle_defense.png",
+    "path": "src/assets/images/games/thumbnails/castle_defense.png",
+    "url": "https://via.placeholder.com/150x100/8D6E63/ffffff?text=Castle%20Defense",
+    "size": "150x100"
+  },
+  {
+    "type": "thumbnail",
+    "filename": "mystery_adventure.png",
+    "path": "src/assets/images/games/thumbnails/mystery_adventure.png",
+    "url": "https://via.placeholder.com/150x100/5C6BC0/ffffff?text=Mystery%20Adventure",
+    "size": "150x100"
+  },
+  {
+    "type": "thumbnail",
+    "filename": "epic_quest.png",
+    "path": "src/assets/images/games/thumbnails/epic_quest.png",
+    "url": "https://via.placeholder.com/150x100/26A69A/ffffff?text=Epic%20Quest",
+    "size": "150x100"
+  },
+  {
+    "type": "thumbnail",
+    "filename": "default_game.png",
+    "path": "src/assets/images/games/thumbnails/default_game.png",
+    "url": "https://via.placeholder.com/150x100/6366f1/ffffff?text=Default+Game",
+    "size": "150x100"
+  },
+  {
+    "type": "screenshot",
+    "filename": "valley_of_terror_1.png",
+    "path": "src/assets/images/games/screenshots/valley_of_terror_1.png",
+    "url": "https://via.placeholder.com/800x600/FF6B6B/ffffff?text=Valley%20of%20Terror%20Screenshot%201",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "valley_of_terror_2.png",
+    "path": "src/assets/images/games/screenshots/valley_of_terror_2.png",
+    "url": "https://via.placeholder.com/800x600/FF6B6B/ffffff?text=Valley%20of%20Terror%20Screenshot%202",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "boulder_blast_1.png",
+    "path": "src/assets/images/games/screenshots/boulder_blast_1.png",
+    "url": "https://via.placeholder.com/800x600/4ECDC4/ffffff?text=Boulder%20Blast%20Screenshot%201",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "boulder_blast_2.png",
+    "path": "src/assets/images/games/screenshots/boulder_blast_2.png",
+    "url": "https://via.placeholder.com/800x600/4ECDC4/ffffff?text=Boulder%20Blast%20Screenshot%202",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "punch_heroes_1.png",
+    "path": "src/assets/images/games/screenshots/punch_heroes_1.png",
+    "url": "https://via.placeholder.com/800x600/45B7D1/ffffff?text=Punch%20Heroes%20Screenshot%201",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "punch_heroes_2.png",
+    "path": "src/assets/images/games/screenshots/punch_heroes_2.png",
+    "url": "https://via.placeholder.com/800x600/45B7D1/ffffff?text=Punch%20Heroes%20Screenshot%202",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "blazing_blades_1.png",
+    "path": "src/assets/images/games/screenshots/blazing_blades_1.png",
+    "url": "https://via.placeholder.com/800x600/FFA726/ffffff?text=Blazing%20Blades%20Screenshot%201",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "blazing_blades_2.png",
+    "path": "src/assets/images/games/screenshots/blazing_blades_2.png",
+    "url": "https://via.placeholder.com/800x600/FFA726/ffffff?text=Blazing%20Blades%20Screenshot%202",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "bottle_shoot_1.png",
+    "path": "src/assets/images/games/screenshots/bottle_shoot_1.png",
+    "url": "https://via.placeholder.com/800x600/66BB6A/ffffff?text=Bottle%20Shoot%20Screenshot%201",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "bottle_shoot_2.png",
+    "path": "src/assets/images/games/screenshots/bottle_shoot_2.png",
+    "url": "https://via.placeholder.com/800x600/66BB6A/ffffff?text=Bottle%20Shoot%20Screenshot%202",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "puzzle_master_1.png",
+    "path": "src/assets/images/games/screenshots/puzzle_master_1.png",
+    "url": "https://via.placeholder.com/800x600/AB47BC/ffffff?text=Puzzle%20Master%20Screenshot%201",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "puzzle_master_2.png",
+    "path": "src/assets/images/games/screenshots/puzzle_master_2.png",
+    "url": "https://via.placeholder.com/800x600/AB47BC/ffffff?text=Puzzle%20Master%20Screenshot%202",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "speed_racer_1.png",
+    "path": "src/assets/images/games/screenshots/speed_racer_1.png",
+    "url": "https://via.placeholder.com/800x600/EF5350/ffffff?text=Speed%20Racer%20Screenshot%201",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "speed_racer_2.png",
+    "path": "src/assets/images/games/screenshots/speed_racer_2.png",
+    "url": "https://via.placeholder.com/800x600/EF5350/ffffff?text=Speed%20Racer%20Screenshot%202",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "castle_defense_1.png",
+    "path": "src/assets/images/games/screenshots/castle_defense_1.png",
+    "url": "https://via.placeholder.com/800x600/8D6E63/ffffff?text=Castle%20Defense%20Screenshot%201",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "castle_defense_2.png",
+    "path": "src/assets/images/games/screenshots/castle_defense_2.png",
+    "url": "https://via.placeholder.com/800x600/8D6E63/ffffff?text=Castle%20Defense%20Screenshot%202",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "mystery_adventure_1.png",
+    "path": "src/assets/images/games/screenshots/mystery_adventure_1.png",
+    "url": "https://via.placeholder.com/800x600/5C6BC0/ffffff?text=Mystery%20Adventure%20Screenshot%201",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "mystery_adventure_2.png",
+    "path": "src/assets/images/games/screenshots/mystery_adventure_2.png",
+    "url": "https://via.placeholder.com/800x600/5C6BC0/ffffff?text=Mystery%20Adventure%20Screenshot%202",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "epic_quest_1.png",
+    "path": "src/assets/images/games/screenshots/epic_quest_1.png",
+    "url": "https://via.placeholder.com/800x600/26A69A/ffffff?text=Epic%20Quest%20Screenshot%201",
+    "size": "800x600"
+  },
+  {
+    "type": "screenshot",
+    "filename": "epic_quest_2.png",
+    "path": "src/assets/images/games/screenshots/epic_quest_2.png",
+    "url": "https://via.placeholder.com/800x600/26A69A/ffffff?text=Epic%20Quest%20Screenshot%202",
+    "size": "800x600"
+  },
+  {
+    "type": "banner",
+    "filename": "valley_of_terror_banner.png",
+    "path": "src/assets/images/games/banners/valley_of_terror_banner.png",
+    "url": "https://via.placeholder.com/1200x400/FF6B6B/ffffff?text=Valley%20of%20Terror%20Banner",
+    "size": "1200x400"
+  },
+  {
+    "type": "banner",
+    "filename": "boulder_blast_banner.png",
+    "path": "src/assets/images/games/banners/boulder_blast_banner.png",
+    "url": "https://via.placeholder.com/1200x400/4ECDC4/ffffff?text=Boulder%20Blast%20Banner",
+    "size": "1200x400"
+  },
+  {
+    "type": "banner",
+    "filename": "punch_heroes_banner.png",
+    "path": "src/assets/images/games/banners/punch_heroes_banner.png",
+    "url": "https://via.placeholder.com/1200x400/45B7D1/ffffff?text=Punch%20Heroes%20Banner",
+    "size": "1200x400"
+  },
+  {
+    "type": "banner",
+    "filename": "blazing_blades_banner.png",
+    "path": "src/assets/images/games/banners/blazing_blades_banner.png",
+    "url": "https://via.placeholder.com/1200x400/FFA726/ffffff?text=Blazing%20Blades%20Banner",
+    "size": "1200x400"
+  },
+  {
+    "type": "banner",
+    "filename": "bottle_shoot_banner.png",
+    "path": "src/assets/images/games/banners/bottle_shoot_banner.png",
+    "url": "https://via.placeholder.com/1200x400/66BB6A/ffffff?text=Bottle%20Shoot%20Banner",
+    "size": "1200x400"
+  },
+  {
+    "type": "banner",
+    "filename": "puzzle_master_banner.png",
+    "path": "src/assets/images/games/banners/puzzle_master_banner.png",
+    "url": "https://via.placeholder.com/1200x400/AB47BC/ffffff?text=Puzzle%20Master%20Banner",
+    "size": "1200x400"
+  },
+  {
+    "type": "banner",
+    "filename": "speed_racer_banner.png",
+    "path": "src/assets/images/games/banners/speed_racer_banner.png",
+    "url": "https://via.placeholder.com/1200x400/EF5350/ffffff?text=Speed%20Racer%20Banner",
+    "size": "1200x400"
+  },
+  {
+    "type": "banner",
+    "filename": "castle_defense_banner.png",
+    "path": "src/assets/images/games/banners/castle_defense_banner.png",
+    "url": "https://via.placeholder.com/1200x400/8D6E63/ffffff?text=Castle%20Defense%20Banner",
+    "size": "1200x400"
+  },
+  {
+    "type": "banner",
+    "filename": "mystery_adventure_banner.png",
+    "path": "src/assets/images/games/banners/mystery_adventure_banner.png",
+    "url": "https://via.placeholder.com/1200x400/5C6BC0/ffffff?text=Mystery%20Adventure%20Banner",
+    "size": "1200x400"
+  },
+  {
+    "type": "banner",
+    "filename": "epic_quest_banner.png",
+    "path": "src/assets/images/games/banners/epic_quest_banner.png",
+    "url": "https://via.placeholder.com/1200x400/26A69A/ffffff?text=Epic%20Quest%20Banner",
+    "size": "1200x400"
+  },
+  {
+    "type": "banner",
+    "filename": "default_game_banner.png",
+    "path": "src/assets/images/games/banners/default_game_banner.png",
+    "url": "https://via.placeholder.com/1200x400/6366f1/ffffff?text=Default+Game+Banner",
+    "size": "1200x400"
+  }
+]

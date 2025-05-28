@@ -1,0 +1,15 @@
+# Thư mục screenshots cho game images
+# Kích thước: 800x600px
+# Format: PNG hoặc JPG
+
+# Đặt ảnh screenshot game vào đây với tên:
+# - {game_key}_1.png
+# - {game_key}_2.png
+
+# Ví dụ:
+# - valley_of_terror_1.png
+# - valley_of_terror_2.png
+# - mystery_adventure_1.png
+# - mystery_adventure_2.png
+# - epic_quest_1.png
+# - epic_quest_2.png 

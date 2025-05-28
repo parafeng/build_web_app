@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "Game Mobile App",
+    "slug": "game-mobile-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1e90ff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "androidStatusBar": {
+      "backgroundColor": "transparent",
+      "barStyle": "light-content",
+      "hidden": false,
+      "translucent": true
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.gamemobileapp",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        },
+        "UIStatusBarHidden": false,
+        "UIViewControllerBasedStatusBarAppearance": true
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1e90ff"
+      },
+      "package": "com.yourcompany.gamemobileapp",
+      "permissions": ["INTERNET"],
+      "statusBar": {
+        "hidden": false,
+        "translucent": true,
+        "backgroundColor": "transparent"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+
+    "extra": {
+      "apiUrl": "http://192.168.1.9:5000"
+    }
+  }
+} 
