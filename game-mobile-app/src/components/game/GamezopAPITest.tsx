@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import gamezopService from '../../api/gamezopService';
+import { t } from '../../utils/i18n';
 
 interface GamezopAPITestProps {
   onClose: () => void;
@@ -41,19 +42,19 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
         gamezopService.setDemoMode(wasDemo);
         
         Alert.alert(
-          'API Test Success!',
-          `Found ${result.gamesCount} games with real images from Gamezop API`,
-          [{ text: 'OK' }]
+          t('api_test_success'),
+          t('found_games_with_images').replace('{count}', result.gamesCount.toString()),
+          [{ text: t('ok') }]
         );
       } else {
         Alert.alert(
-          'API Test Failed',
+          t('api_test_failed'),
           result.message,
-          [{ text: 'OK' }]
+          [{ text: t('ok') }]
         );
       }
     } catch (error) {
-      Alert.alert('Error', `Test failed: ${error.message}`);
+      Alert.alert(t('error'), t('test_failed').replace('{error}', error.message));
     } finally {
       setLoading(false);
     }
@@ -65,9 +66,9 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
     setCurrentMode(newMode);
     
     Alert.alert(
-      'Demo Mode Changed',
-      `Demo mode is now ${newMode ? 'ENABLED' : 'DISABLED'}`,
-      [{ text: 'OK' }]
+      t('demo_mode_changed'),
+      t('demo_mode_status').replace('{status}', newMode ? t('enabled') : t('disabled')),
+      [{ text: t('ok') }]
     );
   };
 
@@ -85,12 +86,12 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
       gamezopService.setDemoMode(wasDemo);
       
       Alert.alert(
-        'Real Games Loaded',
-        `Loaded ${games.length} games with real Gamezop images`,
-        [{ text: 'OK' }]
+        t('real_games_loaded'),
+        t('loaded_games_with_images').replace('{count}', games.length.toString()),
+        [{ text: t('ok') }]
       );
     } catch (error) {
-      Alert.alert('Error', `Failed to load real games: ${error.message}`);
+      Alert.alert(t('error'), t('failed_load_real_games').replace('{error}', error.message));
     } finally {
       setLoading(false);
     }
@@ -100,7 +101,7 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Gamezop API Test</Text>
+        <Text style={styles.headerTitle}>{t('gamezop_api_test')}</Text>
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
           <Ionicons name="close" size={24} color="#ffffff" />
         </TouchableOpacity>
@@ -109,12 +110,12 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
       <ScrollView style={styles.content}>
         {/* Current Status */}
         <View style={styles.statusCard}>
-          <Text style={styles.cardTitle}>Current Status</Text>
+          <Text style={styles.cardTitle}>{t('current_status')}</Text>
           <Text style={styles.statusText}>
-            Demo Mode: {currentMode ? '🟡 ENABLED' : '🟢 DISABLED'}
+            {t('demo_mode')}: {currentMode ? '🟡 ' + t('enabled') : '🟢 ' + t('disabled')}
           </Text>
           <Text style={styles.statusText}>
-            Partner ID: {gamezopService['config']?.partnerId || 'zv1y2i8p'}
+            {t('partner_id')}: {gamezopService['config']?.partnerId || 'zv1y2i8p'}
           </Text>
         </View>
 
@@ -130,7 +131,7 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
             ) : (
               <>
                 <Ionicons name="wifi" size={20} color="#ffffff" />
-                <Text style={styles.buttonText}>Test API Connection</Text>
+                <Text style={styles.buttonText}>{t('test_api_connection')}</Text>
               </>
             )}
           </TouchableOpacity>
@@ -140,7 +141,7 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
             onPress={toggleDemoMode}
           >
             <Ionicons name="swap-horizontal" size={20} color="#ffffff" />
-            <Text style={styles.buttonText}>Toggle Demo Mode</Text>
+            <Text style={styles.buttonText}>{t('toggle_demo_mode')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -149,14 +150,14 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
             disabled={loading}
           >
             <Ionicons name="download" size={20} color="#ffffff" />
-            <Text style={styles.buttonText}>Load Real Games</Text>
+            <Text style={styles.buttonText}>{t('load_real_games')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* API Result */}
         {apiResult && (
           <View style={styles.resultCard}>
-            <Text style={styles.cardTitle}>API Test Result</Text>
+            <Text style={styles.cardTitle}>{t('api_test_result')}</Text>
             <Text style={[
               styles.resultText,
               { color: apiResult.success ? '#10b981' : '#ef4444' }
@@ -165,7 +166,7 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
             </Text>
             {apiResult.success && (
               <Text style={styles.resultDetail}>
-                Games Available: {apiResult.gamesCount}
+                {t('games_available')}: {apiResult.gamesCount}
               </Text>
             )}
           </View>
@@ -174,9 +175,9 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
         {/* Real Games Preview */}
         {realGames.length > 0 && (
           <View style={styles.gamesCard}>
-            <Text style={styles.cardTitle}>Real Games from API</Text>
+            <Text style={styles.cardTitle}>{t('real_games_from_api')}</Text>
             <Text style={styles.gamesSubtitle}>
-              {realGames.length} games loaded with real images
+              {realGames.length} {t('games_loaded_with_images')}
             </Text>
             
             {realGames.map((game, index) => (
@@ -192,7 +193,7 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
                   <Text style={styles.gameId}>ID: {game.id}</Text>
                   {game.screenshots && game.screenshots.length > 0 && (
                     <Text style={styles.gameScreenshots}>
-                      📸 {game.screenshots.length} screenshots
+                      📸 {game.screenshots.length} {t('screenshots')}
                     </Text>
                   )}
                 </View>
@@ -203,18 +204,18 @@ const GamezopAPITest: React.FC<GamezopAPITestProps> = ({ onClose }) => {
 
         {/* Instructions */}
         <View style={styles.instructionsCard}>
-          <Text style={styles.cardTitle}>Instructions</Text>
+          <Text style={styles.cardTitle}>{t('instructions')}</Text>
           <Text style={styles.instructionText}>
-            1. <Text style={styles.bold}>Test API Connection</Text>: Check if Gamezop API is accessible
+            1. <Text style={styles.bold}>{t('test_api_connection')}</Text>: {t('check_api_accessible')}
           </Text>
           <Text style={styles.instructionText}>
-            2. <Text style={styles.bold}>Toggle Demo Mode</Text>: Switch between demo data and real API
+            2. <Text style={styles.bold}>{t('toggle_demo_mode')}</Text>: {t('switch_demo_real')}
           </Text>
           <Text style={styles.instructionText}>
-            3. <Text style={styles.bold}>Load Real Games</Text>: Fetch games with real images from Gamezop
+            3. <Text style={styles.bold}>{t('load_real_games')}</Text>: {t('fetch_games_real_images')}
           </Text>
           <Text style={styles.instructionText}>
-            4. If API works, you can disable demo mode to use real images!
+            4. {t('api_works_disable_demo')}
           </Text>
         </View>
       </ScrollView>

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
+import { t } from '../../utils/i18n';
 
 interface GamezopEmbedProps {
   gameUrl: string;
@@ -37,11 +38,11 @@ const GamezopEmbed: React.FC<GamezopEmbedProps> = ({ gameUrl, gameName, onClose 
     setLoading(false);
     setError(true);
     Alert.alert(
-      'Lỗi tải game',
-      'Không thể tải game. Vui lòng thử lại sau.',
+      t('error'),
+      t('game_load_error'),
       [
-        { text: 'Thử lại', onPress: () => setError(false) },
-        { text: 'Đóng', onPress: onClose }
+        { text: t('retry'), onPress: () => setError(false) },
+        { text: t('close'), onPress: onClose }
       ]
     );
   };
@@ -62,11 +63,11 @@ const GamezopEmbed: React.FC<GamezopEmbedProps> = ({ gameUrl, gameName, onClose 
       // Optionally, you can open external links in system browser with user confirmation
       if (url.startsWith('http')) {
         Alert.alert(
-          'Mở liên kết bên ngoài',
-          'Bạn có muốn mở liên kết này trong trình duyệt?',
+          t('open_link'),
+          t('open_link_question'),
           [
-            { text: 'Hủy', style: 'cancel' },
-            { text: 'Mở', onPress: () => Linking.openURL(url) }
+            { text: t('cancel'), style: 'cancel' },
+            { text: t('open'), onPress: () => Linking.openURL(url) }
           ]
         );
       }
@@ -141,11 +142,11 @@ const GamezopEmbed: React.FC<GamezopEmbedProps> = ({ gameUrl, gameName, onClose 
     <View style={styles.loadingContainer}>
       <View style={styles.loadingContent}>
         <ActivityIndicator size="large" color="#1e90ff" />
-        <Text style={styles.loadingText}>Đang tải {gameName}...</Text>
+        <Text style={styles.loadingText}>{t('loading_game').replace('{gameName}', gameName)}</Text>
         <View style={styles.progressBar}>
           <View style={[styles.progressFill, { width: '70%' }]} />
         </View>
-        <Text style={styles.loadingTip}>Hãy chờ một chút để tận hưởng trải nghiệm game tốt nhất</Text>
+        <Text style={styles.loadingTip}>{t('loading_tip')}</Text>
       </View>
     </View>
   );
@@ -154,12 +155,12 @@ const GamezopEmbed: React.FC<GamezopEmbedProps> = ({ gameUrl, gameName, onClose 
     <View style={styles.errorContainer}>
       <View style={styles.errorContent}>
         <Ionicons name="alert-circle-outline" size={64} color="#ef4444" />
-        <Text style={styles.errorTitle}>Không thể tải game</Text>
+        <Text style={styles.errorTitle}>{t('game_load_error')}</Text>
         <Text style={styles.errorMessage}>
-          Vui lòng kiểm tra kết nối internet và thử lại
+          {t('check_connection')}
         </Text>
         <TouchableOpacity style={styles.retryButton} onPress={() => setError(false)}>
-          <Text style={styles.retryButtonText}>Thử lại</Text>
+          <Text style={styles.retryButtonText}>{t('retry')}</Text>
         </TouchableOpacity>
       </View>
     </View>

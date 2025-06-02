@@ -13,7 +13,8 @@ import {
   Dimensions,
   TextInput,
   Animated,
-  Platform
+  Platform,
+  Keyboard
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -78,23 +79,26 @@ const HomeScreen: React.FC = () => {
   // Hiệu ứng thu nhỏ theo chiều cao khi scroll
   const headerHeightPercent = scrollY.interpolate({
     inputRange: [0, 100],
-    outputRange: [100, 92], // Giảm độ co lại
+    outputRange: [100, 95], // Giảm độ co lại
     extrapolate: 'clamp',
   });
   
   // Cải thiện hiệu ứng bo tròn góc khi scroll
   const headerBorderRadius = scrollY.interpolate({
     inputRange: [0, 100],
-    outputRange: [30, 20], // Giảm độ bo tròn khi scroll để phù hợp hơn
+    outputRange: [25, 18], // Giảm độ bo tròn khi scroll để phù hợp hơn
     extrapolate: 'clamp',
   });
   
   // Hiệu ứng dịch chuyển lên trên khi scroll
   const headerTranslateY = scrollY.interpolate({
     inputRange: [0, 100],
-    outputRange: [0, -5],
+    outputRange: [0, -3],
     extrapolate: 'clamp',
   });
+  
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [searchResults, setSearchResults] = useState<Game[]>([]);
   
   useEffect(() => {
     loadGames();
@@ -365,6 +369,101 @@ const HomeScreen: React.FC = () => {
     </TouchableOpacity>
   );
   
+  // Thêm hàm tìm kiếm game
+  const searchGames = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    
+    Keyboard.dismiss(); // Ẩn bàn phím khi thực hiện tìm kiếm
+    
+    const normalizedQuery = query.toLowerCase().trim();
+    
+    // Kết hợp tất cả các game từ các mục khác nhau
+    const allGames = [...mostPlayed, ...trendingGames, ...newGames];
+    // Loại bỏ các game trùng lặp
+    const uniqueGames = allGames.filter((game, index, self) => 
+      index === self.findIndex((g) => g.id === game.id)
+    );
+    
+    // Lọc game theo query
+    const filtered = uniqueGames.filter(game => 
+      game.name.toLowerCase().includes(normalizedQuery) || 
+      game.description.toLowerCase().includes(normalizedQuery) ||
+      game.category.toLowerCase().includes(normalizedQuery)
+    );
+    
+    setSearchResults(filtered);
+  };
+  
+  // Xử lý khi người dùng thay đổi nội dung tìm kiếm
+  const handleSearchChange = (text: string) => {
+    setSearchQuery(text);
+    searchGames(text);
+    if (text.length > 0) {
+      setIsSearchActive(true);
+    }
+  };
+
+  // Xử lý khi người dùng focus vào ô tìm kiếm
+  const handleSearchFocus = () => {
+    setIsSearchActive(true);
+    // Nếu đã có query, thực hiện tìm kiếm
+    if (searchQuery.length > 0) {
+      searchGames(searchQuery);
+    }
+  };
+  
+  // Xử lý khi người dùng huỷ tìm kiếm
+  const handleCancelSearch = () => {
+    setSearchQuery('');
+    setIsSearchActive(false);
+    setSearchResults([]);
+    Keyboard.dismiss();
+  };
+  
+  // Render một item trong kết quả tìm kiếm
+  const renderSearchResultItem = ({ item }: { item: Game }) => {
+    // Lấy rating (đánh giá) từ 3.5 đến 5.0 ngẫu nhiên
+    const rating = (3.5 + Math.random() * 1.5).toFixed(1);
+    
+    return (
+      <TouchableOpacity 
+        style={styles.searchResultItem}
+        onPress={() => handleGamePress(item)}
+        activeOpacity={0.8}
+      >
+        <Image 
+          source={getGameThumbnail(item.id)}
+          style={styles.searchResultImage}
+        />
+        <View style={styles.searchResultInfo}>
+          <Text style={styles.searchResultName} numberOfLines={1}>{item.name}</Text>
+          <View style={styles.searchResultCategoryContainer}>
+            <Text style={styles.searchResultCategoryText}>{item.category}</Text>
+          </View>
+          <View style={styles.searchResultStats}>
+            <View style={styles.searchResultStat}>
+              <Ionicons name="time-outline" size={12} color="#6b7280" />
+              <Text style={styles.searchResultStatText}>{item.averageSession}</Text>
+            </View>
+            <View style={styles.searchResultStat}>
+              <Ionicons name="star" size={12} color="#FFD700" />
+              <Text style={styles.searchResultStatText}>{rating}</Text>
+            </View>
+          </View>
+        </View>
+        <TouchableOpacity 
+          style={styles.searchResultPlayButton}
+          onPress={() => handleGamePress(item)}
+        >
+          <Ionicons name="play" size={16} color="#ffffff" />
+        </TouchableOpacity>
+      </TouchableOpacity>
+    );
+  };
+  
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -398,7 +497,7 @@ const HomeScreen: React.FC = () => {
         translucent={true}
       />
       
-      {/* Header */}
+      {/* Header - Điều chỉnh header để sử dụng chiều cao StatusBar */}
       <Animated.View style={[
         styles.header, 
         { 
@@ -422,14 +521,21 @@ const HomeScreen: React.FC = () => {
             transform: [
               { translateY: headerTranslateY }
             ],
+            marginTop: scrollY.interpolate({
+              inputRange: [0, 100],
+              outputRange: [5, 2], // Giảm marginTop khi scroll
+              extrapolate: 'clamp',
+            }),
             fontSize: scrollY.interpolate({
               inputRange: [0, 100],
-              outputRange: [28, 24],
+              outputRange: [22, 20],
               extrapolate: 'clamp',
-            })
+            }),
+            // Ẩn tiêu đề khi đang tìm kiếm
+            display: isSearchActive ? 'none' : 'flex'
           }
         ]}>
-          Game Hub
+          Danh mục Game
         </Animated.Text>
         <Animated.Text style={[
           styles.headerSubtitle,
@@ -441,10 +547,12 @@ const HomeScreen: React.FC = () => {
               inputRange: [0, 100],
               outputRange: [1, 0.9],
               extrapolate: 'clamp',
-            })
+            }),
+            // Ẩn dòng phụ đề khi đang tìm kiếm
+            display: isSearchActive ? 'none' : 'flex'
           }
         ]}>
-          5 games có sẵn
+          Chọn game yêu thích để chơi
         </Animated.Text>
         
         {/* Search Bar */}
@@ -454,103 +562,144 @@ const HomeScreen: React.FC = () => {
             transform: [
               { translateY: headerTranslateY }
             ],
-            width: scrollY.interpolate({
-              inputRange: [0, 100],
-              outputRange: ['95%', '90%'], // Điều chỉnh lại độ rộng của thanh tìm kiếm
-              extrapolate: 'clamp',
-            })
+            width: isSearchActive 
+              ? '100%' 
+              : scrollY.interpolate({
+                  inputRange: [0, 100],
+                  outputRange: ['95%', '90%'],
+                  extrapolate: 'clamp',
+                }),
+            marginTop: isSearchActive ? 10 : 0
           }
         ]}>
+          {isSearchActive && (
+            <TouchableOpacity onPress={handleCancelSearch} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={22} color="#6b7280" />
+            </TouchableOpacity>
+          )}
           <Ionicons name="search" size={18} color="#9ca3af" />
           <TextInput 
             style={styles.searchInput}
             placeholder="Tìm kiếm game..."
             value={searchQuery}
-            onChangeText={setSearchQuery}
+            onChangeText={handleSearchChange}
+            onFocus={handleSearchFocus}
+            returnKeyType="search"
+            onSubmitEditing={() => searchGames(searchQuery)}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <TouchableOpacity onPress={handleCancelSearch}>
               <Ionicons name="close-circle" size={18} color="#9ca3af" />
             </TouchableOpacity>
           )}
         </Animated.View>
       </Animated.View>
       
-      <Animated.ScrollView 
-        showsVerticalScrollIndicator={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-      >
-        <View style={styles.contentContainer}>
-          {/* Most Played Section */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Most Played</Text>
+      {isSearchActive ? (
+        /* Hiển thị kết quả tìm kiếm */
+        <View style={styles.searchResultsContainer}>
+          {searchResults.length > 0 ? (
             <FlatList
-              data={mostPlayed}
+              data={searchResults}
               keyExtractor={(item) => item.id}
-              renderItem={renderMostPlayedItem}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.mostPlayedContainer}
+              renderItem={renderSearchResultItem}
+              contentContainerStyle={styles.searchResultsList}
+              showsVerticalScrollIndicator={false}
             />
-          </View>
-          
-          {/* Trending Section */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitleTrending}>TRENDING</Text>
-            <FlatList
-              data={trendingGames}
-              keyExtractor={(item) => item.id}
-              renderItem={renderTrendingItem}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.trendingContainer}
-              snapToInterval={CARD_WIDTH}
-              decelerationRate="fast"
-              snapToAlignment="center"
-              initialScrollIndex={1}
-            />
-          </View>
-          
-          {/* Categories */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Thể loại</Text>
-            <FlatList
-              data={CATEGORIES}
-              keyExtractor={(item) => item.id}
-              renderItem={renderCategoryItem}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categoriesContainer}
-            />
-          </View>
-          
-          {/* Games By Category */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>Game Catalog</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('GameCatalog' as never)}>
-                <Text style={styles.viewAllText}>Xem tất cả</Text>
-              </TouchableOpacity>
+          ) : (
+            <View style={styles.noResultsContainer}>
+              {searchQuery.length > 0 ? (
+                <>
+                  <Ionicons name="search-outline" size={50} color="#d1d5db" />
+                  <Text style={styles.noResultsText}>Không tìm thấy game nào</Text>
+                  <Text style={styles.noResultsSubtext}>Thử tìm kiếm với từ khóa khác</Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons name="search" size={50} color="#d1d5db" />
+                  <Text style={styles.noResultsText}>Tìm kiếm game</Text>
+                  <Text style={styles.noResultsSubtext}>Nhập tên game bạn muốn tìm</Text>
+                </>
+              )}
+            </View>
+          )}
+        </View>
+      ) : (
+        /* Hiển thị nội dung thông thường */
+        <Animated.ScrollView 
+          showsVerticalScrollIndicator={false}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+        >
+          <View style={styles.contentContainer}>
+            {/* Most Played Section */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Most Played</Text>
+              <FlatList
+                data={mostPlayed}
+                keyExtractor={(item) => item.id}
+                renderItem={renderMostPlayedItem}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.mostPlayedContainer}
+              />
             </View>
             
-            <View style={styles.gamesGridContainer}>
-      <FlatList
-                data={filteredGamesByCategory.slice(0, 6)}
-        keyExtractor={(item) => item.id}
-        renderItem={renderGameItem}
-                numColumns={2}
-                scrollEnabled={false}
-                contentContainerStyle={styles.gamesGrid}
-                columnWrapperStyle={styles.gameColumnWrapper}
-      />
-    </View>
+            {/* Trending Section */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitleTrending}>TRENDING</Text>
+              <FlatList
+                data={trendingGames}
+                keyExtractor={(item) => item.id}
+                renderItem={renderTrendingItem}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.trendingContainer}
+                snapToInterval={CARD_WIDTH}
+                decelerationRate="fast"
+                snapToAlignment="center"
+                initialScrollIndex={1}
+              />
+            </View>
+            
+            {/* Categories */}
+            <View style={styles.sectionContainer}>
+              <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionTitle}>Thể loại</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('GameCatalog' as never)}>
+                  <Text style={styles.viewAllText}>Xem tất cả</Text>
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={CATEGORIES}
+                keyExtractor={(item) => item.id}
+                renderItem={renderCategoryItem}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoriesContainer}
+              />
+            </View>
+            
+            {/* Games By Category */}
+            <View style={styles.sectionContainer}>
+              <View style={styles.gamesGridContainer}>
+                <FlatList
+                  data={filteredGamesByCategory.slice(0, 6)}
+                  keyExtractor={(item) => item.id}
+                  renderItem={renderGameItem}
+                  numColumns={2}
+                  scrollEnabled={false}
+                  contentContainerStyle={styles.gamesGrid}
+                  columnWrapperStyle={styles.gameColumnWrapper}
+                />
+              </View>
+            </View>
           </View>
-        </View>
-      </Animated.ScrollView>
+        </Animated.ScrollView>
+      )}
     </SafeAreaView>
   );
 };
@@ -572,25 +721,25 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#1e90ff',
-    paddingTop: 60,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 15) + 5 : 45,
     paddingHorizontal: 16,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    paddingBottom: 15,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
     zIndex: 10,
-    marginTop: -20,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 40,
     fontWeight: 'bold',
     color: '#ffffff',
-    marginBottom: 4,
+    marginBottom: 2,
+    marginTop: 0,
   },
   headerSubtitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
     color: '#ffffff',
-    marginBottom: 16,
+    marginBottom: 12,
     textAlign: 'left',
   },
   profileButton: {
@@ -622,6 +771,7 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     marginBottom: 24,
+    marginTop: 8,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
@@ -774,15 +924,18 @@ const styles = StyleSheet.create({
   },
   categoriesContainer: {
     paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   categoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 30,
     marginRight: 12,
+    marginBottom: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -941,6 +1094,104 @@ const styles = StyleSheet.create({
   retryText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  // Thêm styles mới cho tìm kiếm
+  backButton: {
+    marginRight: 8,
+  },
+  searchResultsContainer: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  searchResultsList: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 30,
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+    alignItems: 'center',
+  },
+  searchResultImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
+    backgroundColor: '#f3f4f6',
+  },
+  searchResultInfo: {
+    flex: 1,
+  },
+  searchResultName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  searchResultCategoryContainer: {
+    backgroundColor: '#e0e7ff',
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  searchResultCategoryText: {
+    color: '#1e90ff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  searchResultStats: {
+    flexDirection: 'row',
+  },
+  searchResultStat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  searchResultStatText: {
+    fontSize: 11,
+    color: '#6b7280',
+    marginLeft: 4,
+  },
+  searchResultPlayButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#1e90ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  noResultsText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#9ca3af',
+    marginTop: 16,
+  },
+  noResultsSubtext: {
+    fontSize: 14,
+    color: '#d1d5db',
+    marginTop: 4,
+    textAlign: 'center',
   },
 });
 

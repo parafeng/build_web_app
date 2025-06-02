@@ -2,6 +2,8 @@
 // Tích hợp với Gamezop để lấy danh sách games và URLs
 
 import gameImages, { getGameThumbnail, getGameScreenshots, getGameBanner } from '../assets/images/games/gameImages.config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getCurrentLanguage } from '../utils/i18n';
 
 interface GamezopConfig {
   partnerId: string;
@@ -38,32 +40,69 @@ interface GamezopGame {
 class GamezopService {
   private config: GamezopConfig;
   private demoMode: boolean = false; // Tắt demo mode mặc định
+  private apiFailCount: number = 0; // Đếm số lần API thất bại
+  private maxApiFailsBeforeDemo: number = 3; // Số lần thất bại tối đa trước khi chuyển sang demo mode
 
   constructor() {
     this.config = {
       partnerId: process.env.GAMEZOP_PARTNER_ID || 'zv1y2i8p',
       apiKey: process.env.GAMEZOP_API_KEY || 'your-api-key',
       baseUrl: 'https://api.gamezop.com/v2',
-      language: 'en' // English for more games
+      language: 'vi' // Mặc định tiếng Việt
     };
     
     // Không sử dụng demo mode mặc định
     this.demoMode = false;
-    console.log('🎮 Gamezop Service: Using real API by default');
+    console.debug('🎮 Gamezop Service: Using real API by default');
+    
+    // Cập nhật ngôn ngữ từ cài đặt
+    this.updateLanguageFromSettings();
+  }
+  
+  // Cập nhật ngôn ngữ từ cài đặt
+  async updateLanguageFromSettings() {
+    try {
+      // Ưu tiên lấy từ cài đặt
+      const savedSettings = await AsyncStorage.getItem('app_settings');
+      if (savedSettings) {
+        const { language } = JSON.parse(savedSettings);
+        if (language) {
+          this.config.language = language;
+          console.log(`🎮 Gamezop Service: Using language from settings: ${language}`);
+          return;
+        }
+      }
+      
+      // Nếu không có trong cài đặt, lấy từ i18n
+      const currentLanguage = getCurrentLanguage();
+      if (currentLanguage) {
+        this.config.language = currentLanguage;
+        console.log(`🎮 Gamezop Service: Using language from i18n: ${currentLanguage}`);
+        return;
+      }
+      
+      // Giữ nguyên mặc định nếu không có cài đặt
+      console.log(`🎮 Gamezop Service: Using default language: ${this.config.language}`);
+    } catch (error) {
+      console.error('Error updating language from settings:', error);
+    }
   }
 
   // Lấy danh sách games từ Gamezop API
   async getGames(category?: string, limit: number = 20): Promise<GamezopGame[]> {
+    // Cập nhật ngôn ngữ trước khi gọi API
+    await this.updateLanguageFromSettings();
+    
     // Demo mode - return demo data immediately
     if (this.demoMode) {
-      console.log('🎮 Gamezop Demo Mode: Using demo games data');
+      console.debug('🎮 Gamezop Demo Mode: Using demo games data');
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
       return this.getDemoGames(category);
     }
 
     try {
-      console.log('Fetching games from Gamezop API...');
+      console.debug('Fetching games from Gamezop API...');
       // Try multiple API endpoints
       const apiUrls = [
         `https://pub.gamezop.com/v3/games?id=${this.config.partnerId}&lang=${this.config.language}`,
@@ -75,21 +114,32 @@ class GamezopService {
       
       for (const apiUrl of apiUrls) {
         try {
-          console.log(`Trying API: ${apiUrl}`);
+          console.debug(`Trying API: ${apiUrl}`);
 
+          // Thêm timeout cho API request
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 giây timeout
+          
           const response = await fetch(apiUrl, {
             method: 'GET',
-        headers: {
+            headers: {
               'Accept': 'application/json',
-          'Content-Type': 'application/json',
+              'Content-Type': 'application/json',
               'User-Agent': 'GamezopReactNativeApp/1.0'
             },
-            credentials: 'omit' // Không gửi credentials
-      });
+            credentials: 'omit', // Không gửi credentials
+            signal: controller.signal // Thêm signal để có thể abort request
+          });
+          
+          // Xóa timeout nếu request thành công
+          clearTimeout(timeoutId);
 
           if (response.ok) {
             const data = await response.json();
-            console.log('✅ Gamezop API Success:', data.games?.length, 'games loaded');
+            console.debug('✅ Gamezop API Success:', data.games?.length, 'games loaded');
+            
+            // Reset fail count on success
+            this.apiFailCount = 0;
             
             let games = this.formatGamesFromAPI(data.games || []);
             
@@ -103,20 +153,36 @@ class GamezopService {
             
             return games;
           } else {
-            console.warn(`API ${apiUrl} failed with status:`, response.status);
+            console.debug(`API ${apiUrl} failed with status:`, response.status);
             lastError = new Error(`API Error: ${response.status}`);
           }
         } catch (err) {
-          console.warn(`API ${apiUrl} failed:`, err.message);
-          lastError = err;
+          // Xử lý lỗi timeout riêng để thông báo rõ ràng hơn
+          if (err.name === 'AbortError') {
+            console.debug(`API ${apiUrl} timed out after 5 seconds`);
+            lastError = new Error('API request timed out');
+          } else {
+            console.debug(`API ${apiUrl} failed:`, err.message);
+            lastError = err;
+          }
         }
       }
 
       throw lastError || new Error('All API endpoints failed');
       
     } catch (error) {
-      console.error('Error fetching games from Gamezop:', error);
-      console.log('🔄 Falling back to demo data...');
+      console.debug('Error fetching games from Gamezop:', error);
+      
+      // Tăng số lần API thất bại
+      this.apiFailCount++;
+      
+      // Nếu số lần thất bại vượt quá ngưỡng, tự động chuyển sang chế độ demo
+      if (this.apiFailCount >= this.maxApiFailsBeforeDemo && !this.demoMode) {
+        console.debug(`API failed ${this.apiFailCount} times, automatically switching to demo mode`);
+        this.setDemoMode(true);
+      }
+      
+      console.debug('🔄 Falling back to demo data...');
       // Return demo data as fallback
       return this.getDemoGames(category);
     }
@@ -372,7 +438,11 @@ class GamezopService {
 
     for (const apiUrl of apiUrls) {
       try {
-        console.log(`Testing API: ${apiUrl}`);
+        console.debug(`Testing API: ${apiUrl}`);
+        
+        // Thêm timeout cho API request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 giây timeout
         
         const response = await fetch(apiUrl, {
           method: 'GET',
@@ -381,8 +451,12 @@ class GamezopService {
             'Content-Type': 'application/json',
             'User-Agent': 'GamezopReactNativeApp/1.0'
           },
-          credentials: 'omit'
+          credentials: 'omit',
+          signal: controller.signal // Thêm signal để có thể abort request
         });
+        
+        // Xóa timeout nếu request thành công
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const data = await response.json();
@@ -394,7 +468,7 @@ class GamezopService {
             message: `✅ API connected successfully! Found ${gamesCount} games with real images from ${apiUrl}`
           };
         } else {
-          console.warn(`API ${apiUrl} returned status: ${response.status}`);
+          console.debug(`API ${apiUrl} returned status: ${response.status}`);
           
           // If it's the last URL, return the error
           if (apiUrl === apiUrls[apiUrls.length - 1]) {
@@ -407,14 +481,19 @@ class GamezopService {
           }
         }
       } catch (error) {
-        console.warn(`API ${apiUrl} failed:`, error.message);
+        // Xử lý lỗi timeout riêng để thông báo rõ ràng hơn
+        if (error.name === 'AbortError') {
+          console.debug(`API ${apiUrl} timed out after 5 seconds`);
+        } else {
+          console.debug(`API ${apiUrl} failed:`, error.message);
+        }
         
         // If it's the last URL, return the error
         if (apiUrl === apiUrls[apiUrls.length - 1]) {
           return {
             success: false,
             gamesCount: 0,
-            message: `❌ All API endpoints failed. Network error: ${error.message}`
+            message: `❌ All API endpoints failed. ${error.name === 'AbortError' ? 'Timeout after 5 seconds' : `Network error: ${error.message}`}`
           };
         }
       }
@@ -430,7 +509,13 @@ class GamezopService {
   // Enable/disable demo mode
   setDemoMode(enabled: boolean): void {
     this.demoMode = enabled;
-    console.log(`🎮 Gamezop Demo Mode: ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    
+    // Reset fail count when manually changing mode
+    if (enabled) {
+      this.apiFailCount = 0;
+    }
+    
+    console.debug(`🎮 Gamezop Demo Mode: ${enabled ? 'ENABLED' : 'DISABLED'}`);
   }
 
   // Get current demo mode status

@@ -23,6 +23,7 @@ import { Ionicons } from '@expo/vector-icons';
 import gamezopService from '../../api/gamezopService';
 import GamezopEmbed from '../../components/game/GamezopEmbed';
 import gameImagesConfig from '../../assets/images/games/gameImages.config';
+import { t } from '../../utils/i18n';
 
 const { width, height } = Dimensions.get('window');
 
@@ -52,8 +53,6 @@ interface Comment {
   userLiked: boolean;
 }
 
-const FILTERS = ['Tất cả', 'Mới nhất', '5 sao', '4 sao', '3 sao', '1-2 sao'];
-
 const GameScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
@@ -72,11 +71,13 @@ const GameScreen: React.FC = () => {
   ]);
   const [newComment, setNewComment] = useState('');
   const [showAllComments, setShowAllComments] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState('Tất cả');
+  const [selectedFilter, setSelectedFilter] = useState(t('all'));
   const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
   const [tempRating, setTempRating] = useState(0);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   const [hasUserRated, setHasUserRated] = useState(false);
+
+  const FILTERS = [t('all'), t('newest'), t('5_star'), t('4_star'), t('3_star'), t('1_2_star')];
 
   useEffect(() => {
     // Tạo URLs cho game từ gamezopService
@@ -130,7 +131,7 @@ const GameScreen: React.FC = () => {
     try {
       await WebBrowser.openBrowserAsync(gameInfo.gameUrl);
     } catch (error) {
-      Alert.alert('Lỗi', 'Không thể mở game trong trình duyệt');
+      Alert.alert(t('error'), t('game_load_error'));
     }
   };
 
@@ -178,23 +179,23 @@ const GameScreen: React.FC = () => {
 
   const showGameInfo = () => {
     Alert.alert(
-      'Thông tin Game',
-      `Tên game: ${game.name}\nThể loại: ${game.category}\n\nThời gian chơi trung bình: ${game.averageSession}`,
+      t('game_catalog'),
+      `${t('name')}: ${game.name}\n${t('category')}: ${game.category}\n\n${t('average_session')}: ${game.averageSession}`,
       [
-        { text: 'Đóng', style: 'cancel' }
+        { text: t('close'), style: 'cancel' }
       ]
     );
   };
 
   const handleAddComment = () => {
     if (newComment.trim() === '' || userRating === 0) {
-      Alert.alert('Thông báo', 'Vui lòng nhập nội dung và đánh giá số sao trước khi gửi.');
+      Alert.alert(t('notification'), t('comment_rating_required'));
       return;
     }
     
     const newCommentObj = {
       id: Date.now().toString(),
-      user: 'Người dùng',
+      user: t('user'),
       text: newComment,
       rating: userRating,
       date: new Date().toLocaleDateString('vi-VN'),
@@ -237,19 +238,19 @@ const GameScreen: React.FC = () => {
     setIsRatingModalVisible(false);
     
     // Giả lập lưu đánh giá vào API hoặc bộ nhớ cục bộ
-    Alert.alert('Cảm ơn bạn!', 'Đánh giá của bạn đã được ghi nhận.');
+    Alert.alert(t('thank_you'), t('rating_received'));
   };
   
   const getFilteredComments = () => {
-    if (selectedFilter === 'Tất cả') return comments;
-    if (selectedFilter === 'Mới nhất') {
+    if (selectedFilter === t('all')) return comments;
+    if (selectedFilter === t('newest')) {
       return [...comments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }
     
-    if (selectedFilter === '5 sao') return comments.filter(c => c.rating === 5);
-    if (selectedFilter === '4 sao') return comments.filter(c => c.rating === 4);
-    if (selectedFilter === '3 sao') return comments.filter(c => c.rating === 3);
-    if (selectedFilter === '1-2 sao') return comments.filter(c => c.rating <= 2);
+    if (selectedFilter === t('5_star')) return comments.filter(c => c.rating === 5);
+    if (selectedFilter === t('4_star')) return comments.filter(c => c.rating === 4);
+    if (selectedFilter === t('3_star')) return comments.filter(c => c.rating === 3);
+    if (selectedFilter === t('1_2_star')) return comments.filter(c => c.rating <= 2);
     
     return comments;
   };
@@ -407,10 +408,16 @@ const GameScreen: React.FC = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <StatusBar backgroundColor="#1f2937" barStyle="light-content" />
+      <StatusBar 
+        backgroundColor="transparent" 
+        barStyle="light-content" 
+        translucent={true}
+      />
       
-      {/* Header */}
-      <View style={styles.header}>
+      {/* Header - Điều chỉnh để tránh che chữ */}
+      <View style={[styles.header, {
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 30) + 10 : 50
+      }]}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Ionicons name="arrow-back" size={24} color="#ffffff" />
         </TouchableOpacity>
@@ -530,73 +537,70 @@ const GameScreen: React.FC = () => {
           </View>
           
           {/* Comments Section */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>Đánh giá & Bình luận</Text>
-              <Text style={styles.commentCount}>{comments.length} đánh giá</Text>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t('ratings_reviews')}</Text>
+              <TouchableOpacity onPress={handleRateGame}>
+                <Text style={styles.rateGameText}>{hasUserRated ? t('edit_rating') : t('rate_game')}</Text>
+              </TouchableOpacity>
             </View>
-            
-            {/* Filter Comments */}
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.filtersContainer}
-            >
-              {FILTERS.map(renderFilterItem)}
-            </ScrollView>
-            
-            {/* Add Comment */}
-            <View style={styles.addCommentContainer}>
+
+            {/* Rating Summary */}
+            <View style={styles.ratingsSummary}>
+              {/* ... existing code ... */}
+            </View>
+
+            {/* Comment Input */}
+            <View style={styles.commentInputContainer}>
               <TextInput
                 style={styles.commentInput}
-                placeholder="Chia sẻ ý kiến của bạn..."
+                placeholder={t('write_comment')}
+                placeholderTextColor="#9ca3af"
                 value={newComment}
                 onChangeText={setNewComment}
                 multiline
               />
               <TouchableOpacity 
-                style={[
-                  styles.addCommentButton,
-                  (newComment.trim() === '' || userRating === 0) && styles.disabledButton
-                ]} 
+                style={styles.sendButton} 
                 onPress={handleAddComment}
-                disabled={newComment.trim() === '' || userRating === 0}
               >
                 <Ionicons name="send" size={20} color="#ffffff" />
               </TouchableOpacity>
             </View>
-            
-            {!hasUserRated && (
-              <Text style={styles.ratingReminder}>
-                Hãy đánh giá game trước khi bình luận
-              </Text>
-            )}
-            
+
+            {/* Comments Filter */}
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              style={styles.filtersContainer}
+            >
+              {FILTERS.map(renderFilterItem)}
+            </ScrollView>
+
             {/* Comments List */}
-            {getFilteredComments().length > 0 ? (
-              <>
-                {(showAllComments ? getFilteredComments() : getFilteredComments().slice(0, 2)).map((comment) => (
-                  <View key={comment.id}>
-                    {renderCommentItem({ item: comment })}
-                  </View>
-                ))}
-                
-                {getFilteredComments().length > 2 && (
-                  <TouchableOpacity 
-                    style={styles.showMoreButton}
-                    onPress={() => setShowAllComments(!showAllComments)}
-                  >
-                    <Text style={styles.showMoreText}>
-                      {showAllComments ? 'Ẩn bớt' : `Xem thêm ${getFilteredComments().length - 2} bình luận`}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </>
-            ) : (
-              <Text style={styles.noCommentsText}>
-                Không có bình luận nào phù hợp với bộ lọc đã chọn.
-              </Text>
-            )}
+            <View style={styles.commentsContainer}>
+              {getFilteredComments().slice(0, showAllComments ? undefined : 3).map(comment => 
+                renderCommentItem({ item: comment })
+              )}
+              
+              {getFilteredComments().length > 3 && !showAllComments && (
+                <TouchableOpacity 
+                  style={styles.showMoreButton}
+                  onPress={() => setShowAllComments(true)}
+                >
+                  <Text style={styles.showMoreText}>{t('show_more_comments')}</Text>
+                </TouchableOpacity>
+              )}
+              
+              {showAllComments && getFilteredComments().length > 3 && (
+                <TouchableOpacity 
+                  style={styles.showMoreButton}
+                  onPress={() => setShowAllComments(false)}
+                >
+                  <Text style={styles.showMoreText}>{t('show_less')}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -605,7 +609,7 @@ const GameScreen: React.FC = () => {
       <View style={styles.actionButtons}>
         <TouchableOpacity style={styles.playButton} onPress={handlePlayGame}>
           <Ionicons name="play" size={24} color="#ffffff" />
-          <Text style={styles.playButtonText}>Chơi Ngay</Text>
+          <Text style={styles.playButtonText}>{t('play_now')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -629,7 +633,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    paddingTop: 50,
     backgroundColor: '#1f2937',
   },
   backButton: {
@@ -1118,6 +1121,43 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     alignSelf: 'flex-start',
     marginBottom: 8,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  rateGameText: {
+    color: '#1e90ff',
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  ratingsSummary: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  commentInputContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    alignItems: 'flex-end',
+  },
+  sendButton: {
+    backgroundColor: '#1e90ff',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  commentsContainer: {
+    marginBottom: 16,
   },
 });
 

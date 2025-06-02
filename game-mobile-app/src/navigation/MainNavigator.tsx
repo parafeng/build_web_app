@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useDispatch, useSelector } from 'react-redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { AnyAction } from 'redux';
+import { useTheme } from '../utils/ThemeContext';
 
 // Screens
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -15,6 +16,9 @@ import GameScreen from '../screens/game/GameScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import GuestProfileScreen from '../screens/profile/GuestProfileScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
+import HelpSupportScreen from '../screens/profile/HelpSupportScreen';
+import AppSettingsScreen from '../screens/profile/AppSettingsScreen';
+import AchievementsScreen from '../screens/profile/AchievementsScreen';
 
 // Import optimized icons
 import { getTabIcon } from '../assets/icons/icons.config';
@@ -35,6 +39,9 @@ type ProfileStackParamList = {
   ProfileMain: undefined;
   EditProfile: undefined;
   GuestProfile: undefined;
+  HelpSupport: undefined;
+  AppSettings: undefined;
+  Achievements: undefined;
 };
 
 type GameStackParamList = {
@@ -60,8 +67,13 @@ const MainTab = createBottomTabNavigator<MainTabParamList>();
 const RootStack = createStackNavigator<RootStackParamList>();
 
 const AuthNavigator: React.FC = () => {
+  const { theme } = useTheme();
+  
   return (
-    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+    <AuthStack.Navigator screenOptions={{ 
+      headerShown: false,
+      cardStyle: { backgroundColor: theme.background }
+    }}>
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Register" component={RegisterScreen} />
     </AuthStack.Navigator>
@@ -70,13 +82,20 @@ const AuthNavigator: React.FC = () => {
 
 const ProfileNavigator: React.FC = () => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { theme } = useTheme();
 
   return (
-    <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
+    <ProfileStack.Navigator screenOptions={{ 
+      headerShown: false,
+      cardStyle: { backgroundColor: theme.background }
+    }}>
       {isAuthenticated ? (
         <>
           <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} />
           <ProfileStack.Screen name="EditProfile" component={EditProfileScreen} />
+          <ProfileStack.Screen name="HelpSupport" component={HelpSupportScreen} />
+          <ProfileStack.Screen name="AppSettings" component={AppSettingsScreen} />
+          <ProfileStack.Screen name="Achievements" component={AchievementsScreen} />
         </>
       ) : (
         <ProfileStack.Screen name="GuestProfile" component={GuestProfileScreen} />
@@ -86,8 +105,13 @@ const ProfileNavigator: React.FC = () => {
 };
 
 const GameNavigator: React.FC = () => {
+  const { theme } = useTheme();
+  
   return (
-    <GameStack.Navigator screenOptions={{ headerShown: false }}>
+    <GameStack.Navigator screenOptions={{ 
+      headerShown: false,
+      cardStyle: { backgroundColor: theme.background }
+    }}>
       <GameStack.Screen name="GameCatalog" component={GameCatalogScreen} />
       <GameStack.Screen name="GamePlay" component={GameScreen} />
     </GameStack.Navigator>
@@ -95,6 +119,8 @@ const GameNavigator: React.FC = () => {
 };
 
 const MainTabNavigator: React.FC = () => {
+  const { theme, isDark } = useTheme();
+  
   return (
     <MainTab.Navigator
       screenOptions={({ route }) => ({
@@ -121,12 +147,12 @@ const MainTabNavigator: React.FC = () => {
             />
           );
         },
-        tabBarActiveTintColor: '#1e90ff',
-        tabBarInactiveTintColor: '#8e8e93',
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.tabBarInactive,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
+          backgroundColor: theme.tabBar,
           borderTopWidth: 1,
-          borderTopColor: '#e5e5e7',
+          borderTopColor: theme.border,
           paddingBottom: 5,
           paddingTop: 5,
           height: 60,
@@ -166,6 +192,7 @@ const MainTabNavigator: React.FC = () => {
 const MainNavigator: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch<ThunkDispatch<RootState, unknown, AnyAction>>();
+  const { theme } = useTheme();
 
   useEffect(() => {
     // Kiểm tra trạng thái xác thực khi ứng dụng khởi động
@@ -182,14 +209,17 @@ const MainNavigator: React.FC = () => {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#007BFF" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
 
   return (
-    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+    <RootStack.Navigator screenOptions={{ 
+      headerShown: false,
+      cardStyle: { backgroundColor: theme.background }
+    }}>
       <RootStack.Screen name="MainApp" component={MainTabNavigator} />
       <RootStack.Screen name="Auth" component={AuthNavigator} />
     </RootStack.Navigator>

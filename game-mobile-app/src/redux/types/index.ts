@@ -23,6 +23,12 @@ export const UPDATE_PROFILE_REQUEST = 'UPDATE_PROFILE_REQUEST';
 export const UPDATE_PROFILE_SUCCESS = 'UPDATE_PROFILE_SUCCESS';
 export const UPDATE_PROFILE_FAILURE = 'UPDATE_PROFILE_FAILURE';
 
+// Achievement types
+export const FETCH_ACHIEVEMENTS = 'FETCH_ACHIEVEMENTS';
+export const UPDATE_ACHIEVEMENTS = 'UPDATE_ACHIEVEMENTS';
+export const UNLOCK_ACHIEVEMENT = 'UNLOCK_ACHIEVEMENT';
+export const RESET_ACHIEVEMENTS = 'RESET_ACHIEVEMENTS';
+
 // Type definitions for state
 export interface User {
   id: number;
@@ -41,6 +47,19 @@ export interface Game {
   description: string;
   imageUrl: string;
   highestScore?: number;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  completed: boolean;
+  progress?: number;
+  requirement: number;
+  rewardCoins?: number;
+  category: 'gameplay' | 'social' | 'progression' | 'collection';
+  dateCompleted?: string;
 }
 
 export interface GameState {
@@ -65,10 +84,17 @@ export interface ProfileState {
   error: string | null;
 }
 
+export interface AchievementState {
+  achievements: Achievement[];
+  loading: boolean;
+  error: string | null;
+}
+
 export interface RootState {
   auth: AuthState;
   game: GameState;
   profile: ProfileState;
+  achievements: AchievementState;
 }
 
 // Action types
@@ -102,6 +128,32 @@ interface RegisterFailureAction {
   type: typeof REGISTER_FAILURE;
   payload: string;
 }
+
+// Achievement actions
+interface FetchAchievementsAction {
+  type: typeof FETCH_ACHIEVEMENTS;
+  payload: Achievement[];
+}
+
+interface UpdateAchievementsAction {
+  type: typeof UPDATE_ACHIEVEMENTS;
+  payload: Achievement[];
+}
+
+interface UnlockAchievementAction {
+  type: typeof UNLOCK_ACHIEVEMENT;
+  payload: string; // Achievement ID
+}
+
+interface ResetAchievementsAction {
+  type: typeof RESET_ACHIEVEMENTS;
+}
+
+export type AchievementActionTypes =
+  | FetchAchievementsAction
+  | UpdateAchievementsAction
+  | UnlockAchievementAction
+  | ResetAchievementsAction;
 
 export type AuthActionTypes = 
   | LoginRequestAction 

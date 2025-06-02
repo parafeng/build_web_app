@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getButtonIcon } from '../../assets/icons/icons.config';
 import { checkApiStatus } from '../../api/authApi';
@@ -64,76 +64,79 @@ const GuestProfileScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Actions Section */}
-      <View style={styles.actionsSection}>
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <View style={styles.buttonIconContainer}>
-            <Image 
-              source={getButtonIcon('login')} 
-              style={styles.buttonIcon}
-            />
-          </View>
-          <View style={styles.buttonTextContainer}>
-            <Text style={styles.buttonTitle}>Đăng nhập</Text>
-            <Text style={styles.buttonSubtitle}>Truy cập vào tài khoản của bạn</Text>
-          </View>
-          <Text style={styles.buttonArrow}>→</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-          <View style={[styles.buttonIconContainer, styles.registerIconContainer]}>
-            <Image 
-              source={getButtonIcon('signup')} 
-              style={styles.buttonIcon}
-            />
-          </View>
-          <View style={styles.buttonTextContainer}>
-            <Text style={styles.buttonTitle}>Đăng ký</Text>
-            <Text style={styles.buttonSubtitle}>Tạo tài khoản mới</Text>
-          </View>
-          <Text style={styles.buttonArrow}>→</Text>
-        </TouchableOpacity>
+      {/* Scrollable Content */}
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {/* Actions Section */}
+        <View style={styles.actionsSection}>
+          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+            <View style={styles.buttonIconContainer}>
+              <Image 
+                source={getButtonIcon('login')} 
+                style={styles.buttonIcon}
+              />
+            </View>
+            <View style={styles.buttonTextContainer}>
+              <Text style={styles.buttonTitle}>Đăng nhập</Text>
+              <Text style={styles.buttonSubtitle}>Truy cập vào tài khoản của bạn</Text>
+            </View>
+            <Text style={styles.buttonArrow}>→</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
+            <View style={[styles.buttonIconContainer, styles.registerIconContainer]}>
+              <Image 
+                source={getButtonIcon('signup')} 
+                style={styles.buttonIcon}
+              />
+            </View>
+            <View style={styles.buttonTextContainer}>
+              <Text style={styles.buttonTitle}>Đăng ký</Text>
+              <Text style={styles.buttonSubtitle}>Tạo tài khoản mới</Text>
+            </View>
+            <Text style={styles.buttonArrow}>→</Text>
+          </TouchableOpacity>
 
-        {/* Nút kiểm tra API */}
-        <TouchableOpacity 
-          style={[styles.debugButton, checkingApi && styles.debugButtonDisabled]} 
-          onPress={handleCheckApi}
-          disabled={checkingApi}
-        >
-          <View style={[styles.buttonIconContainer, styles.debugIconContainer]}>
-            {checkingApi ? (
-              <ActivityIndicator size="small" color="#4b5563" />
-            ) : (
-              <Text style={styles.debugIcon}>🔍</Text>
-            )}
-          </View>
-          <View style={styles.buttonTextContainer}>
-            <Text style={styles.buttonTitle}>Kiểm tra kết nối API</Text>
-            <Text style={styles.buttonSubtitle}>Debug kết nối đến server</Text>
-          </View>
-          <Text style={styles.buttonArrow}>→</Text>
-        </TouchableOpacity>
-      </View>
+          {/* Nút kiểm tra API */}
+          <TouchableOpacity 
+            style={[styles.debugButton, checkingApi && styles.debugButtonDisabled]} 
+            onPress={handleCheckApi}
+            disabled={checkingApi}
+          >
+            <View style={[styles.buttonIconContainer, styles.debugIconContainer]}>
+              {checkingApi ? (
+                <ActivityIndicator size="small" color="#4b5563" />
+              ) : (
+                <Text style={styles.debugIcon}>🔍</Text>
+              )}
+            </View>
+            <View style={styles.buttonTextContainer}>
+              <Text style={styles.buttonTitle}>Kiểm tra kết nối API</Text>
+              <Text style={styles.buttonSubtitle}>Debug kết nối đến server</Text>
+            </View>
+            <Text style={styles.buttonArrow}>→</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* Guest Benefits Section */}
-      <View style={styles.benefitsSection}>
-        <Text style={styles.benefitsTitle}>Lợi ích khi đăng nhập</Text>
-        
-        <View style={styles.benefitItem}>
-          <Text style={styles.benefitIcon}>🏆</Text>
-          <Text style={styles.benefitText}>Lưu tiến trình và điểm số</Text>
+        {/* Guest Benefits Section */}
+        <View style={styles.benefitsSection}>
+          <Text style={styles.benefitsTitle}>Lợi ích khi đăng nhập</Text>
+          
+          <View style={styles.benefitItem}>
+            <Text style={styles.benefitIcon}>🏆</Text>
+            <Text style={styles.benefitText}>Lưu tiến trình và điểm số</Text>
+          </View>
+          
+          <View style={styles.benefitItem}>
+            <Text style={styles.benefitIcon}>💰</Text>
+            <Text style={styles.benefitText}>Nhận coins hàng ngày</Text>
+          </View>
+          
+          <View style={styles.benefitItem}>
+            <Text style={styles.benefitIcon}>🎮</Text>
+            <Text style={styles.benefitText}>Mở khóa các game đặc biệt</Text>
+          </View>
         </View>
-        
-        <View style={styles.benefitItem}>
-          <Text style={styles.benefitIcon}>💰</Text>
-          <Text style={styles.benefitText}>Nhận coins hàng ngày</Text>
-        </View>
-        
-        <View style={styles.benefitItem}>
-          <Text style={styles.benefitIcon}>🎮</Text>
-          <Text style={styles.benefitText}>Mở khóa các game đặc biệt</Text>
-        </View>
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -141,7 +144,11 @@ const GuestProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f0f2f5',
+  },
+  
+  scrollContainer: {
+    flex: 1,
   },
   
   // Header Section
@@ -155,7 +162,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 200,
-    backgroundColor: '#1e90ff',
+    backgroundColor: '#007bff',
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
@@ -165,10 +172,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#ffffff',
     marginBottom: 30,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   
   // Avatar
@@ -199,14 +209,20 @@ const styles = StyleSheet.create({
   guestTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 5,
+    color: '#000000',
+    marginBottom: 8,
+    textShadowColor: 'rgba(255, 255, 255, 0.6)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   guestSubtitle: {
     fontSize: 16,
-    color: '#e0e7ff',
-    opacity: 0.9,
+    color: '#000000',
     textAlign: 'center',
+    textShadowColor: 'rgba(255, 255, 255, 0.6)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+    fontWeight: '500',
   },
   
   // Actions Section
@@ -219,59 +235,59 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#ffffff',
     borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
+    padding: 16,
+    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 3,
   },
   registerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ffffff',
     borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
+    padding: 16,
+    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 3,
   },
   buttonIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#f0f9ff',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#e6f2ff',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
   },
   registerIconContainer: {
-    backgroundColor: '#f0fff4',
+    backgroundColor: '#e8fff0',
   },
   buttonIcon: {
-    width: 24,
-    height: 24,
+    width: 26,
+    height: 26,
   },
   buttonTextContainer: {
     flex: 1,
   },
   buttonTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#121212',
     marginBottom: 4,
   },
   buttonSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#4a4a4a',
   },
   buttonArrow: {
-    fontSize: 18,
-    color: '#9ca3af',
+    fontSize: 20,
+    color: '#666',
     fontWeight: 'bold',
   },
 
@@ -279,33 +295,35 @@ const styles = StyleSheet.create({
   benefitsSection: {
     marginTop: 20,
     marginHorizontal: 20,
+    marginBottom: 30,
     backgroundColor: '#ffffff',
     borderRadius: 15,
     padding: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 3,
   },
   benefitsTitle: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 15,
+    color: '#121212',
+    marginBottom: 18,
   },
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   benefitIcon: {
-    fontSize: 18,
-    marginRight: 10,
+    fontSize: 20,
+    marginRight: 12,
   },
   benefitText: {
-    fontSize: 15,
-    color: '#4b5563',
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
   },
 
   // Debug Section
@@ -314,29 +332,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#ffffff',
     borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
+    padding: 16,
+    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 3,
   },
   debugButtonDisabled: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: '#f0f0f0',
   },
   debugIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: '#f0f9ff',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
   },
   debugIcon: {
-    fontSize: 18,
-    color: '#4b5563',
+    fontSize: 20,
+    color: '#333',
   },
 });
 
