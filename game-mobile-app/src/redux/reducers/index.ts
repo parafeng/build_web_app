@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
-import authReducer from './authReducer.ts';
-import gameReducer from './gameReducer.ts';
-import profileReducer from './profileReducer.ts';
-import achievementReducer from './achievementReducer.ts';
+import authReducer from './authReducer';
+import gameReducer from './gameReducer';
+import profileReducer from './profileReducer';
+import achievementReducer from './achievementReducer';
 import { RootState } from '../types';
 
 const rootReducer = combineReducers({
