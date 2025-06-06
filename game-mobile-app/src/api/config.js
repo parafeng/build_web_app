@@ -10,14 +10,22 @@ const API_CONFIG = {
     GAMES_URL: 'http://192.168.1.3:5000/api/games',
     
     // Địa chỉ IP thay thế nếu localhost không hoạt động
-    ALT_BASE_URL: 'http://192.168.1.4:5000',
-    ALT_AUTH_URL: 'http://192.168.1.4:5000/api/auth',
-    ALT_GAMES_URL: 'http://192.168.1.4:5000/api/games',
+    ALT_BASE_URL: 'http://localhost:5000',
+    ALT_AUTH_URL: 'http://localhost:5000/api/auth',
+    ALT_GAMES_URL: 'http://localhost:5000/api/games',
     
     // Địa chỉ đặc biệt cho máy ảo Android (10.0.2.2 trỏ đến localhost của máy host)
     ANDROID_EMU_BASE_URL: 'http://10.0.2.2:5000',
     ANDROID_EMU_AUTH_URL: 'http://10.0.2.2:5000/api/auth',
     ANDROID_EMU_GAMES_URL: 'http://10.0.2.2:5000/api/games',
+    
+    // Các địa chỉ thay thế khác để thử nghiệm
+    ALTERNATIVE_URLS: [
+      'http://192.168.1.3:5000',
+      'http://localhost:5000',
+      'http://127.0.0.1:5000',
+      'http://192.168.1.4:5000'
+    ],
     
     // Tăng timeout để tránh lỗi timeout quá sớm
     TIMEOUT: 15000, // 15 seconds
@@ -77,6 +85,51 @@ export const STORAGE_KEYS = {
   GAME_SETTINGS: 'game_settings',
 };
 
+// Hàm tiện ích để thử nhiều URL cho đến khi tìm thấy URL hoạt động
+export const findWorkingApiUrl = async () => {
+  const urls = API_ENDPOINTS.ALTERNATIVE_URLS || [API_ENDPOINTS.BASE_URL];
+  
+  for (const baseUrl of urls) {
+    try {
+      console.log(`Đang kiểm tra URL: ${baseUrl}`);
+      
+      // Tạo AbortController để có thể timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      
+      try {
+        const response = await fetch(`${baseUrl}/api/check-connection`, {
+          method: 'GET',
+          headers: DEFAULT_HEADERS,
+          signal: controller.signal
+        });
+        
+        // Xóa timeout nếu request hoàn thành
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+          console.log(`Tìm thấy URL hoạt động: ${baseUrl}`);
+          return baseUrl;
+        }
+      } catch (fetchError) {
+        // Xóa timeout nếu có lỗi
+        clearTimeout(timeoutId);
+        
+        if (fetchError.name === 'AbortError') {
+          console.log(`URL ${baseUrl} timeout`);
+        } else {
+          console.log(`URL ${baseUrl} lỗi:`, fetchError.message);
+        }
+      }
+    } catch (error) {
+      console.log(`URL ${baseUrl} không hoạt động:`, error.message);
+    }
+  }
+  
+  console.warn('Không tìm thấy URL nào hoạt động, sử dụng URL mặc định');
+  return API_ENDPOINTS.BASE_URL;
+};
+
 export default {
   API_ENDPOINTS,
   DEFAULT_HEADERS,
@@ -84,4 +137,5 @@ export default {
   AUTH_ENDPOINTS,
   GAMES_ENDPOINTS,
   STORAGE_KEYS,
+  findWorkingApiUrl
 }; 

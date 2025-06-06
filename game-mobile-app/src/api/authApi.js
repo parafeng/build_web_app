@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { API_ENDPOINTS, DEFAULT_HEADERS, REQUEST_TIMEOUT, AUTH_ENDPOINTS } from './config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_ENDPOINTS, DEFAULT_HEADERS, REQUEST_TIMEOUT, AUTH_ENDPOINTS, STORAGE_KEYS } from './config';
 
 // Tạo instance axios với cấu hình từ config file
 const api = axios.create({
@@ -443,16 +444,20 @@ export const checkApiStatus = async () => {
 // Hàm lấy token hiện tại từ bộ nhớ cục bộ
 export const getToken = async () => {
   try {
-    // Đoạn này có thể thay thế bằng AsyncStorage trong thực tế
-    // Tạm thời sử dụng localStorage để mô phỏng trong môi trường web
-    if (typeof localStorage !== 'undefined') {
-      return localStorage.getItem('authToken');
-    }
+    console.log('Đang lấy token xác thực từ AsyncStorage...');
     
-    // Hoặc sử dụng cách lưu trữ token khác trong ứng dụng của bạn
-    return null;
+    // Sử dụng AsyncStorage để lấy token
+    const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+    
+    if (token) {
+      console.log('Đã tìm thấy token xác thực');
+      return token;
+    } else {
+      console.log('Không tìm thấy token xác thực');
+      return null;
+    }
   } catch (error) {
-    console.error('Error getting token:', error);
+    console.error('Lỗi khi lấy token:', error);
     return null;
   }
 }; 

@@ -26,6 +26,8 @@ import gameImagesConfig from '../../assets/images/games/gameImages.config';
 import { t } from '../../utils/i18n';
 import * as authApi from '../../api/authApi';
 import * as gamesApi from '../../api/gamesApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../../api/config';
 
 const { width, height } = Dimensions.get('window');
 
@@ -245,41 +247,95 @@ const GameScreen: React.FC = () => {
     
     try {
       // Kiểm tra đăng nhập
+      console.log('Đang kiểm tra token đăng nhập...');
       const token = await authApi.getToken();
+      console.log('Token nhận được:', token ? 'Có token' : 'Không có token');
+      
+      // Lấy thông tin người dùng từ AsyncStorage
+      let userData = null;
+      try {
+        const userDataStr = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
+        if (userDataStr) {
+          userData = JSON.parse(userDataStr);
+          console.log('Đã lấy thông tin người dùng:', userData.username);
+        }
+      } catch (userDataError) {
+        console.error('Lỗi khi lấy thông tin người dùng:', userDataError);
+      }
+      
       if (!token) {
         Alert.alert(
           t('login_required'), 
           t('login_to_comment'),
           [
             { text: t('cancel'), style: 'cancel' },
-            { text: t('login'), onPress: () => navigation.navigate('Login' as never) }
+            { 
+              text: t('login'), 
+              onPress: () => {
+                console.log('Chuyển hướng đến màn hình đăng nhập');
+                // @ts-ignore - Bỏ qua lỗi kiểu dữ liệu
+                navigation.navigate('Auth', { screen: 'Login' });
+              }
+            }
           ]
         );
         return;
       }
       
       // Gọi API thêm bình luận
-      const response = await gamesApi.addComment(game.id, newComment, userRating, token);
+      console.log('Gọi API thêm bình luận với:', {
+        gameId: game.id,
+        comment: newComment,
+        rating: userRating
+      });
       
-      // Tạo object bình luận mới từ response API
-      const newCommentObj = {
-        id: response.id.toString(),
-        user: response.User?.username || t('user'),
-        text: newComment,
-        rating: userRating,
-        date: new Date().toLocaleDateString('vi-VN'),
-        likes: 0,
-        userLiked: false
-      };
-      
-      // Cập nhật state
-      setComments([newCommentObj, ...comments]);
-      setNewComment('');
-      
-      // Thông báo thành công
-      Alert.alert(t('success'), t('comment_added'));
+      try {
+        const response = await gamesApi.addComment(game.id, newComment, userRating, token);
+        console.log('Kết quả API thêm bình luận:', response);
+        
+        // Tạo object bình luận mới từ response API
+        const newCommentObj = {
+          id: response?.id?.toString() || Date.now().toString(),
+          user: response?.User?.username || userData?.username || t('user'),
+          text: newComment,
+          rating: userRating,
+          date: new Date().toLocaleDateString('vi-VN'),
+          likes: 0,
+          userLiked: false
+        };
+        
+        // Cập nhật state
+        setComments([newCommentObj, ...comments]);
+        setNewComment('');
+        
+        // Không hiển thị thông báo thành công nữa
+        // Alert.alert(t('success'), t('comment_added'));
+      } catch (apiError) {
+        console.error('Lỗi API thêm bình luận:', apiError);
+        
+        // Lấy tên người dùng từ AsyncStorage nếu có
+        const username = userData?.username || t('user');
+        
+        // Thêm bình luận tạm thời nếu API lỗi (cho mục đích demo)
+        const tempCommentObj = {
+          id: Date.now().toString(),
+          user: username,
+          text: newComment,
+          rating: userRating,
+          date: new Date().toLocaleDateString('vi-VN'),
+          likes: 0,
+          userLiked: false
+        };
+        
+        // Cập nhật state
+        setComments([tempCommentObj, ...comments]);
+        setNewComment('');
+        
+        // Hiển thị thông báo nhỏ hoặc không hiển thị gì cả khi ở chế độ offline
+        // Alert.alert('Thông báo', 'Đã thêm bình luận ở chế độ offline. Bình luận sẽ được đồng bộ khi có kết nối.');
+      }
     } catch (error) {
-      console.error('Error adding comment:', error);
+      console.error('Error in handleAddComment:', error);
       Alert.alert(t('error'), error.message || t('comment_error'));
     }
   };
@@ -324,8 +380,8 @@ const GameScreen: React.FC = () => {
                 // Cập nhật state
                 setComments(comments.filter(comment => comment.id !== commentId));
                 
-                // Thông báo thành công
-                Alert.alert(t('success'), t('comment_deleted'));
+                // Không hiển thị thông báo thành công nữa
+                // Alert.alert(t('success'), t('comment_deleted'));
               } catch (error) {
                 console.error('Error deleting comment:', error);
                 Alert.alert(t('error'), error.message || t('delete_comment_error'));
@@ -355,8 +411,8 @@ const GameScreen: React.FC = () => {
     setHasUserRated(true);
     setIsRatingModalVisible(false);
     
-    // Giả lập lưu đánh giá vào API hoặc bộ nhớ cục bộ
-    Alert.alert(t('thank_you'), t('rating_received'));
+    // Không hiển thị thông báo thành công nữa
+    // Alert.alert(t('thank_you'), t('rating_received'));
   };
   
   const getFilteredComments = () => {

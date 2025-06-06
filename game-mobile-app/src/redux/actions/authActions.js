@@ -14,21 +14,6 @@ import {
   FETCH_PROFILE_FAILURE
 } from '../types';
 
-// Demo mode - bypass authentication for testing
-const DEMO_MODE = false; // Set to false when backend is ready
-
-// Demo user data
-const DEMO_USER = {
-  id: 'demo-user-1',
-  username: 'demo',
-  email: 'demo@example.com',
-  name: 'Demo User',
-  avatar: null,
-  createdAt: new Date().toISOString()
-};
-
-const DEMO_TOKEN = 'demo-token-12345';
-
 // Lưu token vào AsyncStorage
 const saveToken = async (token) => {
   try {
@@ -62,29 +47,15 @@ export const login = (username, password) => async (dispatch) => {
   dispatch({ type: LOGIN_REQUEST });
   
   try {
-    // Demo mode - bypass authentication
-    if (DEMO_MODE) {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Accept any username/password for demo
-      if (username && password) {
-        await saveToken(DEMO_TOKEN);
-        await saveUserData(DEMO_USER);
-        
-        dispatch({
-          type: LOGIN_SUCCESS,
-          payload: DEMO_USER,
-        });
-        
-        return { token: DEMO_TOKEN, user: DEMO_USER };
-      } else {
-        throw new Error('Vui lòng nhập tên đăng nhập và mật khẩu');
-      }
+    console.log('Đang đăng nhập với tên đăng nhập:', username);
+    
+    if (!username || !password) {
+      throw new Error('Vui lòng nhập tên đăng nhập và mật khẩu');
     }
     
-    // Real API call when not in demo mode
+    // Gọi API đăng nhập thực tế
     const data = await authApi.login(username, password);
+    console.log('Đăng nhập thành công:', data.user?.username);
     
     // Lưu token và thông tin user
     if (data.token) {
@@ -99,6 +70,7 @@ export const login = (username, password) => async (dispatch) => {
     
     return data;
   } catch (error) {
+    console.error('Lỗi đăng nhập:', error);
     dispatch({
       type: LOGIN_FAILURE,
       payload: error.toString(),
@@ -177,29 +149,21 @@ export const checkAuthStatus = () => async (dispatch) => {
   dispatch({ type: LOGIN_REQUEST });
   
   try {
+    console.log('Kiểm tra trạng thái xác thực...');
     const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
     
     if (!token) {
+      console.log('Không tìm thấy token, đăng xuất');
       dispatch({ type: LOGOUT });
       return false;
     }
     
-    // Demo mode - bypass auth check
-    if (DEMO_MODE && token === DEMO_TOKEN) {
-      const userData = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
-      const user = userData ? JSON.parse(userData) : DEMO_USER;
-      
-      dispatch({
-        type: LOGIN_SUCCESS,
-        payload: user,
-      });
-      return true;
-    }
-    
-    // Real API call when not in demo mode
+    // Gọi API kiểm tra trạng thái xác thực
+    console.log('Gọi API kiểm tra token');
     const data = await authApi.checkAuthStatus(token);
     
     // Cập nhật thông tin user trong storage
+    console.log('Cập nhật thông tin người dùng:', data.user?.username);
     await saveUserData(data.user);
     
     dispatch({
@@ -208,6 +172,7 @@ export const checkAuthStatus = () => async (dispatch) => {
     });
     return true;
   } catch (error) {
+    console.error('Lỗi kiểm tra xác thực:', error);
     await removeToken();
     dispatch({ type: LOGOUT });
     return false;
