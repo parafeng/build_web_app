@@ -24,6 +24,8 @@ import gamezopService from '../../api/gamezopService';
 import GamezopEmbed from '../../components/game/GamezopEmbed';
 import gameImagesConfig from '../../assets/images/games/gameImages.config';
 import { t } from '../../utils/i18n';
+import * as authApi from '../../api/authApi';
+import * as gamesApi from '../../api/gamesApi';
 
 const { width, height } = Dimensions.get('window');
 
@@ -51,6 +53,20 @@ interface Comment {
   date: string;
   likes: number;
   userLiked: boolean;
+}
+
+// Định nghĩa thêm interface cho API response
+interface ApiComment {
+  id: number;
+  content: string;
+  rating: number;
+  createdAt: string;
+  userId: number;
+  gameId: number;
+  User?: {
+    id: number;
+    username: string;
+  };
 }
 
 const GameScreen: React.FC = () => {
@@ -122,6 +138,40 @@ const GameScreen: React.FC = () => {
     checkUserRating();
   }, [game.id, game.category]);
 
+  useEffect(() => {
+    // Lấy bình luận cho game
+    const fetchComments = async () => {
+      try {
+        console.log('Fetching comments for game ID:', game.id);
+        const apiComments = await gamesApi.getGameComments(game.id);
+        console.log('API Comments received:', apiComments);
+        
+        if (Array.isArray(apiComments)) {
+          // Chuyển đổi định dạng từ API về định dạng hiện tại của component
+          const formattedComments = apiComments.map((apiComment: ApiComment) => ({
+            id: apiComment.id.toString(),
+            user: apiComment.User?.username || 'Người dùng',
+            text: apiComment.content,
+            rating: apiComment.rating || 5,
+            date: new Date(apiComment.createdAt).toLocaleDateString('vi-VN'),
+            likes: 0,  // API chưa hỗ trợ likes, có thể bổ sung sau
+            userLiked: false
+          }));
+          
+          setComments(formattedComments.length > 0 ? formattedComments : comments);
+        } else {
+          console.warn('API did not return an array:', apiComments);
+        }
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+        // Giữ lại dữ liệu mẫu nếu lỗi
+      }
+    };
+    
+    // Gọi hàm fetch comments
+    fetchComments();
+  }, [game.id]);
+
   const handlePlayGame = () => {
     // All games are now Gamezop games, so use WebView embed for all
     setShowGameEmbed(true);
@@ -187,25 +237,51 @@ const GameScreen: React.FC = () => {
     );
   };
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (newComment.trim() === '' || userRating === 0) {
       Alert.alert(t('notification'), t('comment_rating_required'));
       return;
     }
     
-    const newCommentObj = {
-      id: Date.now().toString(),
-      user: t('user'),
-      text: newComment,
-      rating: userRating,
-      date: new Date().toLocaleDateString('vi-VN'),
-      likes: 0,
-      userLiked: false
-    };
-    
-    setComments([newCommentObj, ...comments]);
-    setNewComment('');
-    // Không reset userRating ở đây vì đã đánh giá rồi
+    try {
+      // Kiểm tra đăng nhập
+      const token = await authApi.getToken();
+      if (!token) {
+        Alert.alert(
+          t('login_required'), 
+          t('login_to_comment'),
+          [
+            { text: t('cancel'), style: 'cancel' },
+            { text: t('login'), onPress: () => navigation.navigate('Login' as never) }
+          ]
+        );
+        return;
+      }
+      
+      // Gọi API thêm bình luận
+      const response = await gamesApi.addComment(game.id, newComment, userRating, token);
+      
+      // Tạo object bình luận mới từ response API
+      const newCommentObj = {
+        id: response.id.toString(),
+        user: response.User?.username || t('user'),
+        text: newComment,
+        rating: userRating,
+        date: new Date().toLocaleDateString('vi-VN'),
+        likes: 0,
+        userLiked: false
+      };
+      
+      // Cập nhật state
+      setComments([newCommentObj, ...comments]);
+      setNewComment('');
+      
+      // Thông báo thành công
+      Alert.alert(t('success'), t('comment_added'));
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      Alert.alert(t('error'), error.message || t('comment_error'));
+    }
   };
 
   const handleLikeComment = (commentId: string) => {
@@ -220,6 +296,48 @@ const GameScreen: React.FC = () => {
       }
       return comment;
     }));
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      // Xác nhận xóa
+      Alert.alert(
+        t('confirm_delete'),
+        t('confirm_delete_comment'),
+        [
+          { text: t('cancel'), style: 'cancel' },
+          { 
+            text: t('delete'), 
+            style: 'destructive', 
+            onPress: async () => {
+              try {
+                // Kiểm tra đăng nhập
+                const token = await authApi.getToken();
+                if (!token) {
+                  Alert.alert(t('error'), t('login_required_delete'));
+                  return;
+                }
+                
+                // Gọi API xóa bình luận
+                await gamesApi.deleteComment(commentId, token);
+                
+                // Cập nhật state
+                setComments(comments.filter(comment => comment.id !== commentId));
+                
+                // Thông báo thành công
+                Alert.alert(t('success'), t('comment_deleted'));
+              } catch (error) {
+                console.error('Error deleting comment:', error);
+                Alert.alert(t('error'), error.message || t('delete_comment_error'));
+              }
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Error in delete comment handler:', error);
+      Alert.alert(t('error'), t('delete_comment_error'));
+    }
   };
 
   const navigateToGame = (selectedGame: Game) => {
@@ -242,17 +360,22 @@ const GameScreen: React.FC = () => {
   };
   
   const getFilteredComments = () => {
-    if (selectedFilter === t('all')) return comments;
-    if (selectedFilter === t('newest')) {
-      return [...comments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    let filteredComments = comments;
+    if (selectedFilter === t('all')) {
+      filteredComments = comments;
+    } else if (selectedFilter === t('newest')) {
+      filteredComments = [...comments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    } else if (selectedFilter === t('5_star')) {
+      filteredComments = comments.filter(c => c.rating === 5);
+    } else if (selectedFilter === t('4_star')) {
+      filteredComments = comments.filter(c => c.rating === 4);
+    } else if (selectedFilter === t('3_star')) {
+      filteredComments = comments.filter(c => c.rating === 3);
+    } else if (selectedFilter === t('1_2_star')) {
+      filteredComments = comments.filter(c => c.rating <= 2);
     }
     
-    if (selectedFilter === t('5_star')) return comments.filter(c => c.rating === 5);
-    if (selectedFilter === t('4_star')) return comments.filter(c => c.rating === 4);
-    if (selectedFilter === t('3_star')) return comments.filter(c => c.rating === 3);
-    if (selectedFilter === t('1_2_star')) return comments.filter(c => c.rating <= 2);
-    
-    return comments;
+    return filteredComments;
   };
   
   const renderCommentItem = ({ item }: { item: Comment }) => (
@@ -278,19 +401,31 @@ const GameScreen: React.FC = () => {
       <Text style={styles.commentText}>{item.text}</Text>
       <View style={styles.commentFooter}>
         <Text style={styles.commentDate}>{item.date}</Text>
-        <TouchableOpacity 
-          style={styles.likeButton}
-          onPress={() => handleLikeComment(item.id)}
-        >
-          <Ionicons 
-            name={item.userLiked ? "heart" : "heart-outline"} 
-            size={16} 
-            color={item.userLiked ? "#ef4444" : "#6b7280"} 
-          />
-          <Text style={[styles.likeCount, item.userLiked && styles.likedText]}>
-            {item.likes}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.commentActions}>
+          <TouchableOpacity 
+            style={styles.likeButton}
+            onPress={() => handleLikeComment(item.id)}
+          >
+            <Ionicons 
+              name={item.userLiked ? "heart" : "heart-outline"} 
+              size={16} 
+              color={item.userLiked ? "#ef4444" : "#6b7280"} 
+            />
+            <Text style={[styles.likeCount, item.userLiked && styles.likedText]}>
+              {item.likes}
+            </Text>
+          </TouchableOpacity>
+          
+          {/* Thêm nút xóa bình luận */}
+          {item.user === t('user') && (
+            <TouchableOpacity 
+              style={styles.deleteButton}
+              onPress={() => handleDeleteComment(item.id)}
+            >
+              <Ionicons name="trash-outline" size={16} color="#ef4444" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -579,9 +714,11 @@ const GameScreen: React.FC = () => {
 
             {/* Comments List */}
             <View style={styles.commentsContainer}>
-              {getFilteredComments().slice(0, showAllComments ? undefined : 3).map(comment => 
-                renderCommentItem({ item: comment })
-              )}
+              {getFilteredComments().slice(0, showAllComments ? undefined : 3).map((comment, index) => (
+                <View key={`comment-${comment.id}-${index}`}>
+                  {renderCommentItem({ item: comment })}
+                </View>
+              ))}
               
               {getFilteredComments().length > 3 && !showAllComments && (
                 <TouchableOpacity 
@@ -1158,6 +1295,15 @@ const styles = StyleSheet.create({
   },
   commentsContainer: {
     marginBottom: 16,
+  },
+  commentActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  deleteButton: {
+    marginLeft: 8,
+    padding: 4,
   },
 });
 

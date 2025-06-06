@@ -438,4 +438,21 @@ export const checkApiStatus = async () => {
       error: error.message,
     };
   }
+};
+
+// Hàm lấy token hiện tại từ bộ nhớ cục bộ
+export const getToken = async () => {
+  try {
+    // Đoạn này có thể thay thế bằng AsyncStorage trong thực tế
+    // Tạm thời sử dụng localStorage để mô phỏng trong môi trường web
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('authToken');
+    }
+    
+    // Hoặc sử dụng cách lưu trữ token khác trong ứng dụng của bạn
+    return null;
+  } catch (error) {
+    console.error('Error getting token:', error);
+    return null;
+  }
 }; 

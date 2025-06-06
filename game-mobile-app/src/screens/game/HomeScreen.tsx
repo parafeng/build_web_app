@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -61,6 +61,7 @@ const HomeScreen: React.FC = () => {
   
   const scrollY = useRef(new Animated.Value(0)).current;
   const headerHeight = useRef(new Animated.Value(150)).current;
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Hiệu ứng opacity khi scroll
   const headerOpacity = scrollY.interpolate({
@@ -376,8 +377,6 @@ const HomeScreen: React.FC = () => {
       return;
     }
     
-    Keyboard.dismiss(); // Ẩn bàn phím khi thực hiện tìm kiếm
-    
     const normalizedQuery = query.toLowerCase().trim();
     
     // Kết hợp tất cả các game từ các mục khác nhau
@@ -397,26 +396,43 @@ const HomeScreen: React.FC = () => {
     setSearchResults(filtered);
   };
   
+  // Debounce search để tránh tìm kiếm quá nhiều lần khi người dùng đang nhập
+  const debouncedSearch = useCallback((text: string) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    searchTimeoutRef.current = setTimeout(() => {
+      searchGames(text);
+    }, 300); // Đợi 300ms sau khi người dùng ngừng nhập
+  }, [mostPlayed, trendingGames, newGames]);
+  
   // Xử lý khi người dùng thay đổi nội dung tìm kiếm
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
-    searchGames(text);
+    // Không gọi searchGames ngay lập tức khi người dùng nhập
     if (text.length > 0) {
       setIsSearchActive(true);
+      debouncedSearch(text);
+    } else {
+      // Nếu xóa hết text, reset kết quả tìm kiếm
+      setSearchResults([]);
     }
   };
 
   // Xử lý khi người dùng focus vào ô tìm kiếm
   const handleSearchFocus = () => {
     setIsSearchActive(true);
-    // Nếu đã có query, thực hiện tìm kiếm
-    if (searchQuery.length > 0) {
-      searchGames(searchQuery);
-    }
+    // Chỉ hiển thị giao diện tìm kiếm mà không thực hiện tìm kiếm ngay
   };
   
   // Xử lý khi người dùng huỷ tìm kiếm
   const handleCancelSearch = () => {
+    // Xóa timeout nếu có
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = null;
+    }
     setSearchQuery('');
     setIsSearchActive(false);
     setSearchResults([]);
@@ -585,7 +601,16 @@ const HomeScreen: React.FC = () => {
             onChangeText={handleSearchChange}
             onFocus={handleSearchFocus}
             returnKeyType="search"
-            onSubmitEditing={() => searchGames(searchQuery)}
+            onSubmitEditing={() => {
+              if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+                searchTimeoutRef.current = null;
+              }
+              searchGames(searchQuery);
+            }}
+            autoCorrect={false}
+            autoCapitalize="none"
+            maxLength={50}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={handleCancelSearch}>

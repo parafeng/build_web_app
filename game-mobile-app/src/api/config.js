@@ -4,10 +4,10 @@
 // Cấu hình môi trường phát triển và sản xuất
 const API_CONFIG = {
   development: {
-    // Sử dụng localhost hoặc 127.0.0.1 thay vì IP cụ thể
-    BASE_URL: 'http://localhost:5000',
-    AUTH_URL: 'http://localhost:5000/api/auth',
-    GAMES_URL: 'http://localhost:5000/api/games',
+    // Cập nhật URL để sử dụng IP thay vì localhost cho các thiết bị mobile
+    BASE_URL: 'http://192.168.1.3:5000',
+    AUTH_URL: 'http://192.168.1.3:5000/api/auth',
+    GAMES_URL: 'http://192.168.1.3:5000/api/games',
     
     // Địa chỉ IP thay thế nếu localhost không hoạt động
     ALT_BASE_URL: 'http://192.168.1.4:5000',
@@ -65,6 +65,9 @@ export const GAMES_ENDPOINTS = {
   GET_GAMES: '/games',
   GET_GAME_DETAIL: '/games/:id',
   ADD_COMMENT: '/games/:id/comments',
+  GET_COMMENTS: '/games/:id/comments',
+  DELETE_COMMENT: '/comments/:commentId',
+  RATE_GAME: '/games/:id/rate'
 };
 
 // Storage keys cho AsyncStorage
